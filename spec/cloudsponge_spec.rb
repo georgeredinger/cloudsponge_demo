@@ -1,7 +1,15 @@
 require 'spec_helper'
 require 'pry'
+require 'capybara'
+require 'capybara/dsl'
+require 'capybara/webkit'
+include Capybara::DSL
 
-def load_test_account
+Capybara.run_server = false
+Capybara.default_driver = :webkit
+
+
+def load_test_accounts
   dir = File.expand_path(__FILE__)
   accounts_yml_file = File.expand_path(__FILE__).split("/")[0..-3].join("/") + "/spec/accounts.yml"
   YAML::load_file(accounts_yml_file)
@@ -9,7 +17,7 @@ def load_test_account
 end
 
 describe "Demo accounts" do
-  let(:test_account) {load_test_account}
+  let(:test_account) {load_test_accounts}
 
   it "should load and decode demo account yaml file " do
     fake_mail=test_account['fake_mail']
@@ -21,19 +29,32 @@ describe "Demo accounts" do
   end
 
   it "should fail if there is no accounts yml file" do
+    #dude, get your own spec/accounts.yml file
     expect {YAML::load_file("no such file")}.should raise_error 
   end
 end
 
 describe "provider tests" do
-  let(:test_account) {load_test_account}
+  let(:test_account) {load_test_accounts}
 
   it "should import from Gmail" do
     contacts = nil
     importer = Cloudsponge::ContactImporter.new(test_account['domain_key'] , test_account['domain_password'])
    resp = importer.begin_import('GMAIL')
+      Capybara.app_host = resp[:consent_url] 
 
-binding.pry
+      Capybara.default_wait_time = 20
+    puts "#{resp[:consent_url]}"
+      visit(resp[:consent_url]) 
+      fill_in 'Email',:with => test_account['gmail']['username']
+      fill_in 'Passwd',:with =>test_account['gmail']['password']
+      click_on 'signIn'
+      #sleep(5)
+      #click_on 'submitbutton'
+      sleep(5)
+      click_on 'allow'
+      #save_and_open_page
+ 
     loop do
       events = importer.get_events
       break unless events.select { |e| e.is_error? }.empty?
@@ -42,11 +63,21 @@ binding.pry
         break
       end
     end
-binding.pry
+    
     contacts.should_not be_nil
+
+    matches=0
+    contacts[0].each do |email|
+      if  email.emails[0][:value] == test_account['gmail']['contacts'][0]['email_address']
+        matches+=1
+      end
+    end
+    matches.should > 0
+ 
   end
 
   it "should import from YAHOO" do
+    pending
     contacts = nil
     importer = Cloudsponge::ContactImporter.new(test_account['domain_key'] , test_account['domain_password'])
     resp = importer.begin_import('YAHOO')

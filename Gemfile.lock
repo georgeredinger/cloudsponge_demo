@@ -1,6 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    addressable (2.2.7)
     capybara (1.1.2)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
@@ -24,6 +25,8 @@ GEM
     guard-rspec (0.6.0)
       guard (>= 0.10.0)
     json (1.6.5)
+    launchy (2.0.5)
+      addressable (~> 2.2.6)
     method_source (0.7.0)
     mime-types (1.17.2)
     multi_json (1.0.4)
@@ -63,6 +66,7 @@ DEPENDENCIES
   cloudsponge
   guard
   guard-rspec
+  launchy
   pry
   rspec
   rspec-instafail
