@@ -1,0 +1,8 @@
+source 'http://rubygems.org'
+gem 'pry'
+gem 'capybara-webkit'
+gem 'rspec'
+gem 'guard'
+gem 'rspec-instafail'
+gem 'guard-rspec'
+gem 'cloudsponge'
