@@ -38,13 +38,12 @@ describe "provider tests" do
   let(:test_account) {load_test_accounts}
 
   it "should import from Gmail" do
+    pending
     contacts = nil
     importer = Cloudsponge::ContactImporter.new(test_account['domain_key'] , test_account['domain_password'])
    resp = importer.begin_import('GMAIL')
       Capybara.app_host = resp[:consent_url] 
-
       Capybara.default_wait_time = 20
-    puts "#{resp[:consent_url]}"
       visit(resp[:consent_url]) 
       fill_in 'Email',:with => test_account['gmail']['username']
       fill_in 'Passwd',:with =>test_account['gmail']['password']
@@ -95,5 +94,36 @@ describe "provider tests" do
 
     contacts.should_not be_nil
   end
+
+  it "should import from Windows Live / Hotmail" do
+    contacts = nil
+    importer = Cloudsponge::ContactImporter.new(test_account['domain_key'] , test_account['domain_password'])
+    resp = importer.begin_import('windowslive')
+    Capybara.app_host = resp[:consent_url] 
+    Capybara.default_wait_time = 20
+
+    visit(resp[:consent_url]) 
+    fill_in 'i0116',:with => test_account['hotmail']['username']
+    fill_in 'i0118',:with =>test_account['hotmail']['password']
+    click_on 'idSIButton9'
+
+    loop do
+      events = importer.get_events
+      break unless events.select { |e| e.is_error? }.empty?
+      unless events.select { |e| e.is_complete? }.empty?
+        contacts = importer.get_contacts
+        break
+      end
+    end
+    contacts.should_not be_nil
+    matches=0
+    contacts[0].each do |email|
+      if  email.emails[0][:value] == test_account['hotmail']['contacts'][0]['email_address']
+        matches+=1
+      end
+    end
+    matches.should > 0
+  end
+
 end
 
