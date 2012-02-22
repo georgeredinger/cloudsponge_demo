@@ -38,7 +38,6 @@ describe "provider tests" do
   let(:test_account) {load_test_accounts}
 
   it "should import from Gmail" do
-    pending
     contacts = nil
     importer = Cloudsponge::ContactImporter.new(test_account['domain_key'] , test_account['domain_password'])
    resp = importer.begin_import('GMAIL')
@@ -124,6 +123,5 @@ describe "provider tests" do
     end
     matches.should > 0
   end
-
 end
 
